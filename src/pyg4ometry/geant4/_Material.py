@@ -569,7 +569,7 @@ class Material(MaterialBase):
         """
         import pyg4ometry.gdml.Defines as defines
 
-        if vunit.find("/") != -1:
+        if vunit.find("/") == 0:
             print("Please use 1/unit.")
         vunit = "*" + vunit if vunit != "" else ""
         matrix_name = self.name + "_" + name
