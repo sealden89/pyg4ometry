@@ -58,14 +58,21 @@ def geant4Physical2USDPhysical(stage, path, physical):
 
 def geant4Solid2UsdSolid(stage, path, solid):
     if solid.type == "Box":
-        solid_path = path.AppendPath(solid.name)
-        solid_prim = G4.Box.Define(stage, solid_path)
-        # set parameters
-        solid_prim.GetPrim().GetAttribute("x").Set(solid.pX.eval() / 2)
-        solid_prim.GetPrim().GetAttribute("y").Set(solid.pY.eval() / 2)
-        solid_prim.GetPrim().GetAttribute("z").Set(solid.pZ.eval() / 2)
-        solid_prim.Update()
-        return solid.name
+        return geant4Box2UsdBox(stage, path, solid)
+
+
+def geant4Box2UsdBox(stage, path, solid):
+
+    # create prims
+    solid_path = path.AppendPath(solid.name)
+    solid_prim = G4.Box.Define(stage, solid_path)
+
+    # set parameters
+    solid_prim.GetPrim().GetAttribute("x").Set(solid.pX.eval() / 2)
+    solid_prim.GetPrim().GetAttribute("y").Set(solid.pY.eval() / 2)
+    solid_prim.GetPrim().GetAttribute("z").Set(solid.pZ.eval() / 2)
+    solid_prim.Update()
+    return solid.name
 
 
 def geant4Material2USDMaterials(stage, path, materials):
