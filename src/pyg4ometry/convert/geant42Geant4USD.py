@@ -59,6 +59,8 @@ def geant4Physical2USDPhysical(stage, path, physical):
 def geant4Solid2UsdSolid(stage, path, solid):
     if solid.type == "Box":
         return geant4Box2UsdBox(stage, path, solid)
+    elif solid.type == "Subtraction":
+        return geant4Subtraction2UsdSubtraction(stage, path, solid)
 
 
 def geant4Box2UsdBox(stage, path, solid):
@@ -73,6 +75,44 @@ def geant4Box2UsdBox(stage, path, solid):
     solid_prim.GetPrim().GetAttribute("z").Set(solid.pZ.eval() / 2)
     solid_prim.Update()
     return solid.name
+
+
+def geant4Subtraction2UsdSubtraction(stage, path, solid):
+
+    # create prims
+    solid_path = path.AppendPath(solid.name)
+    solid_prim = G4.Subtraction.Define(stage, solid_path)
+
+    print(solid.obj1.name, solid.obj2.name)
+
+    solid1_name = geant4Solid2UsdSolid(stage, solid_path, solid.obj1)
+    solid2_name = geant4Displaced2UsdDisplaced(
+        stage, solid_path, solid.obj2, solid.tra2[0].eval(), solid.tra2[1].eval()
+    )
+    result = UsdGeom.Mesh.Define(stage, solid_path.AppendPath("result"))
+
+    solid_prim.GetPrim().GetAttribute("solid1prim").Set(solid1_name)
+    solid_prim.GetPrim().GetAttribute("solid2prim").Set(solid2_name)
+    solid_prim.GetPrim().GetAttribute("solid3prim").Set("result")
+
+    solid_prim.Update()
+
+    return solid.name
+
+
+def geant4Displaced2UsdDisplaced(stage, path, solid, rotation, translation):
+    solid_name = solid.name + "_displaced"
+
+    solid_path = path.AppendPath(solid_name)
+    solid_prim = G4.DisplacedSolid.Define(stage, solid_path)
+
+    xform = UsdGeom.Xformable(solid_prim)
+    xform.AddTranslateOp().Set(Gf.Vec3d(*translation))
+    xform.AddRotateZYXOp().Set(Gf.Vec3d(*rotation))
+
+    geant4Solid2UsdSolid(stage, solid_prim.GetPrim().GetPath(), solid)
+
+    return solid_name
 
 
 def geant4Material2USDMaterials(stage, path, materials):
