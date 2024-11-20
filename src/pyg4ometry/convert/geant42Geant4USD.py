@@ -1,3 +1,4 @@
+import numpy as _np
 from pxr import Usd, UsdGeom, Gf, Sdf, G4
 
 
@@ -61,6 +62,10 @@ def geant4Solid2UsdSolid(stage, path, solid):
         return geant4Box2UsdBox(stage, path, solid)
     elif solid.type == "Subtraction":
         return geant4Subtraction2UsdSubtraction(stage, path, solid)
+    elif solid.type == "Union":
+        return geant4Union2UsdUnion(stage, path, solid)
+    elif solid.type == "Intersection":
+        return geant4Intersection2UsdIntersection(stage, path, solid)
 
 
 def geant4Box2UsdBox(stage, path, solid):
@@ -100,6 +105,52 @@ def geant4Subtraction2UsdSubtraction(stage, path, solid):
     return solid.name
 
 
+def geant4Union2UsdUnion(stage, path, solid):
+
+    # create prims
+    solid_path = path.AppendPath(solid.name)
+    solid_prim = G4.Union.Define(stage, solid_path)
+
+    print(solid.obj1.name, solid.obj2.name)
+
+    solid1_name = geant4Solid2UsdSolid(stage, solid_path, solid.obj1)
+    solid2_name = geant4Displaced2UsdDisplaced(
+        stage, solid_path, solid.obj2, solid.tra2[0].eval(), solid.tra2[1].eval()
+    )
+    result = UsdGeom.Mesh.Define(stage, solid_path.AppendPath("result"))
+
+    solid_prim.GetPrim().GetAttribute("solid1prim").Set(solid1_name)
+    solid_prim.GetPrim().GetAttribute("solid2prim").Set(solid2_name)
+    solid_prim.GetPrim().GetAttribute("solid3prim").Set("result")
+
+    solid_prim.Update()
+
+    return solid.name
+
+
+def geant4Intersection2UsdIntersection(stage, path, solid):
+
+    # create prims
+    solid_path = path.AppendPath(solid.name)
+    solid_prim = G4.Intersection.Define(stage, solid_path)
+
+    print(solid.obj1.name, solid.obj2.name)
+
+    solid1_name = geant4Solid2UsdSolid(stage, solid_path, solid.obj1)
+    solid2_name = geant4Displaced2UsdDisplaced(
+        stage, solid_path, solid.obj2, solid.tra2[0].eval(), solid.tra2[1].eval()
+    )
+    result = UsdGeom.Mesh.Define(stage, solid_path.AppendPath("result"))
+
+    solid_prim.GetPrim().GetAttribute("solid1prim").Set(solid1_name)
+    solid_prim.GetPrim().GetAttribute("solid2prim").Set(solid2_name)
+    solid_prim.GetPrim().GetAttribute("solid3prim").Set("result")
+
+    solid_prim.Update()
+
+    return solid.name
+
+
 def geant4Displaced2UsdDisplaced(stage, path, solid, rotation, translation):
     solid_name = solid.name + "_displaced"
 
@@ -108,7 +159,7 @@ def geant4Displaced2UsdDisplaced(stage, path, solid, rotation, translation):
 
     xform = UsdGeom.Xformable(solid_prim)
     xform.AddTranslateOp().Set(Gf.Vec3d(*translation))
-    xform.AddRotateZYXOp().Set(Gf.Vec3d(*rotation))
+    xform.AddRotateZYXOp().Set(Gf.Vec3d(*[r / _np.pi * 180 for r in rotation]))
 
     geant4Solid2UsdSolid(stage, solid_prim.GetPrim().GetPath(), solid)
 
