@@ -7,3 +7,8 @@ from .gdml2stl import *
 from .geant42Vtk import *
 from .oce2Geant4 import *
 from .vis2oce import *
+
+try:
+    from .geant42Geant4USD import *
+except ImportError:
+    pass
