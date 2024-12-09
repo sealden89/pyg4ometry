@@ -159,7 +159,9 @@ def geant4Displaced2UsdDisplaced(stage, path, solid, rotation, translation):
 
     xform = UsdGeom.Xformable(solid_prim)
     xform.AddTranslateOp().Set(Gf.Vec3d(*translation))
-    xform.AddRotateZYXOp().Set(Gf.Vec3d(*[r / _np.pi * 180 for r in rotation]))
+    xform.AddRotateZYXOp().Set(
+        Gf.Vec3d(*[r / _np.pi * 180 for r in rotation])
+    )  # needs conversion from rad to degrees
 
     geant4Solid2UsdSolid(stage, solid_prim.GetPrim().GetPath(), solid)
 
