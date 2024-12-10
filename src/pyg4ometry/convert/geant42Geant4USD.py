@@ -44,7 +44,7 @@ def geant4Physical2USDPhysical(stage, path, physical):
 
     # create physical prim
     physical_path = path.AppendPath(physical.name)
-    physical_prim = G4.Physical.Define(stage, physical_path)
+    physical_prim = G4.Placement.Define(stage, physical_path)
 
     # create logical
     geant4Logical2USDLogical(stage, physical_path, physical.logicalVolume)
@@ -98,6 +98,16 @@ def geant4Subtraction2UsdSubtraction(stage, path, solid):
     solid_prim.GetPrim().GetAttribute("solid2prim").Set(solid2_name)
     solid_prim.GetPrim().GetAttribute("solid3prim").Set("result")
 
+    # set solid1prim and solid2prim as invisible
+    solid1_prim = solid_prim.GetPrim().GetChild(
+        solid_prim.GetPrim().GetAttribute("solid1prim").Get()
+    )
+    solid2_prim = solid_prim.GetPrim().GetChild(
+        solid_prim.GetPrim().GetAttribute("solid2prim").Get()
+    )
+    solid1_prim.GetPrim().GetAttribute("visibility").Set("invisible")
+    solid2_prim.GetPrim().GetAttribute("visibility").Set("invisible")
+
     solid_prim.Update()
 
     return solid.name
@@ -119,6 +129,16 @@ def geant4Union2UsdUnion(stage, path, solid):
     solid_prim.GetPrim().GetAttribute("solid2prim").Set(solid2_name)
     solid_prim.GetPrim().GetAttribute("solid3prim").Set("result")
 
+    # set solid1prim and solid2prim as invisible
+    solid1_prim = solid_prim.GetPrim().GetChild(
+        solid_prim.GetPrim().GetAttribute("solid1prim").Get()
+    )
+    solid2_prim = solid_prim.GetPrim().GetChild(
+        solid_prim.GetPrim().GetAttribute("solid2prim").Get()
+    )
+    solid1_prim.GetPrim().GetAttribute("visibility").Set("invisible")
+    solid2_prim.GetPrim().GetAttribute("visibility").Set("invisible")
+
     solid_prim.Update()
 
     return solid.name
@@ -139,6 +159,16 @@ def geant4Intersection2UsdIntersection(stage, path, solid):
     solid_prim.GetPrim().GetAttribute("solid1prim").Set(solid1_name)
     solid_prim.GetPrim().GetAttribute("solid2prim").Set(solid2_name)
     solid_prim.GetPrim().GetAttribute("solid3prim").Set("result")
+
+    # set solid1prim and solid2prim as invisible
+    solid1_prim = solid_prim.GetPrim().GetChild(
+        solid_prim.GetPrim().GetAttribute("solid1prim").Get()
+    )
+    solid2_prim = solid_prim.GetPrim().GetChild(
+        solid_prim.GetPrim().GetAttribute("solid2prim").Get()
+    )
+    solid1_prim.GetPrim().GetAttribute("visibility").Set("invisible")
+    solid2_prim.GetPrim().GetAttribute("visibility").Set("invisible")
 
     solid_prim.Update()
 
