@@ -2,13 +2,13 @@ import numpy as _np
 from pxr import Usd, UsdGeom, Gf, Sdf, G4
 
 
-def geant4Reg2Geant4USDStage(reg, usdFileName="test.usda"):
+def geant4Reg2Geant4USDStage(reg):
 
     # get world volume
     worldVolume = reg.getWorldVolume()
 
     # open stage
-    stage = Usd.Stage.CreateNew(usdFileName)
+    stage = Usd.Stage.CreateInMemory()
 
     # convert materials
     geant4Material2USDMaterials(stage, Sdf.Path("/Materials"), reg.materialDict)
@@ -16,8 +16,8 @@ def geant4Reg2Geant4USDStage(reg, usdFileName="test.usda"):
     # convert pv-lv to scene tree
     geant4Logical2USDLogical(stage, Sdf.Path("/"), worldVolume)
 
-    # save stage
-    stage.Save()
+    return stage
+    # stage.GetRootLayer().Export("test.usda")
 
 
 def geant4Logical2USDLogical(stage, path, logical):
