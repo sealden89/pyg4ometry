@@ -88,8 +88,6 @@ def geant4Subtraction2UsdSubtraction(stage, path, solid):
     solid_path = path.AppendPath(solid.name)
     solid_prim = G4.Subtraction.Define(stage, solid_path)
 
-    print(solid.obj1.name, solid.obj2.name)
-
     solid1_name = geant4Solid2UsdSolid(stage, solid_path, solid.obj1)
     solid2_name = geant4Displaced2UsdDisplaced(
         stage, solid_path, solid.obj2, solid.tra2[0].eval(), solid.tra2[1].eval()
@@ -111,8 +109,6 @@ def geant4Union2UsdUnion(stage, path, solid):
     solid_path = path.AppendPath(solid.name)
     solid_prim = G4.Union.Define(stage, solid_path)
 
-    print(solid.obj1.name, solid.obj2.name)
-
     solid1_name = geant4Solid2UsdSolid(stage, solid_path, solid.obj1)
     solid2_name = geant4Displaced2UsdDisplaced(
         stage, solid_path, solid.obj2, solid.tra2[0].eval(), solid.tra2[1].eval()
@@ -133,8 +129,6 @@ def geant4Intersection2UsdIntersection(stage, path, solid):
     # create prims
     solid_path = path.AppendPath(solid.name)
     solid_prim = G4.Intersection.Define(stage, solid_path)
-
-    print(solid.obj1.name, solid.obj2.name)
 
     solid1_name = geant4Solid2UsdSolid(stage, solid_path, solid.obj1)
     solid2_name = geant4Displaced2UsdDisplaced(
