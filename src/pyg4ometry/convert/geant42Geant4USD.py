@@ -1,4 +1,6 @@
 import numpy as _np
+from ..gdml import Units as _Units
+
 from pxr import Usd, UsdGeom, Gf, Sdf, G4
 
 
@@ -66,6 +68,8 @@ def geant4Solid2UsdSolid(stage, path, solid):
         return geant4Union2UsdUnion(stage, path, solid)
     elif solid.type == "Intersection":
         return geant4Intersection2UsdIntersection(stage, path, solid)
+    elif solid.type == "MultiUnion":
+        return geant4MultiUnion2UsdMultiUnion(stage, path, solid)
 
 
 def geant4Box2UsdBox(stage, path, solid):
@@ -175,8 +179,11 @@ def geant4Intersection2UsdIntersection(stage, path, solid):
     return solid.name
 
 
-def geant4Displaced2UsdDisplaced(stage, path, solid, rotation, translation):
+def geant4Displaced2UsdDisplaced(stage, path, solid, rotation, translation, index=None):
     solid_name = solid.name + "_displaced"
+
+    if index is not None:
+        solid_name += "_" + str(index)
 
     solid_path = path.AppendPath(solid_name)
     solid_prim = G4.DisplacedSolid.Define(stage, solid_path)
@@ -186,6 +193,37 @@ def geant4Displaced2UsdDisplaced(stage, path, solid, rotation, translation):
 
     geant4Solid2UsdSolid(stage, solid_prim.GetPrim().GetPath(), solid)
 
+    solid_prim.Update()
+
+    return solid_name
+
+
+def geant4MultiUnion2UsdMultiUnion(stage, path, solid):
+    solid_name = solid.name + "_multi"
+
+    solid_path = path.AppendPath(solid_name)
+    solid_prim = G4.MultiUnion.Define(stage, solid_path)
+
+    # loop over deps
+    displaced_solid_names = []
+    for t, s, i in zip(solid.transformations, solid.objects, range(len(solid.objects))):
+        lunit = _Units.unit(t[1].unit)
+        aunit = _Units.unit(t[0].unit)
+
+        r = [r / aunit for r in t[0].eval()]
+        d = [d / lunit for d in t[1].eval()]
+
+        displaced_solid_name = geant4Displaced2UsdDisplaced(stage, solid_path, s, r, d, i)
+        displaced_solid_names.append(displaced_solid_name)
+
+    # create result prim
+    result = UsdGeom.Mesh.Define(stage, solid_path.AppendPath("result"))
+
+    # set names
+    solid_prim.GetPrim().GetAttribute("solidprims").Set(displaced_solid_names)
+    solid_prim.GetPrim().GetAttribute("solid3prim").Set("result")
+
+    # update
     solid_prim.Update()
 
     return solid_name
